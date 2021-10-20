@@ -16,6 +16,9 @@ esp32:
 # API is a requirement of the dashboard import. 
 api:
 
+# OTA is required for Over-the-Air updating
+ota:
+
 # This should point to the public location of this yaml file.
 dashboard_import:
   package_import_url: github://jesserockz/dummy-esphome-configs/temperature-monitor.yaml@v3
