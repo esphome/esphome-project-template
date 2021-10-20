@@ -1,5 +1,5 @@
 esphome:
-  ...
+  name: "jesses-temperature-monitor"
   # Automatically add the mac address to the name
   # so you can use a single firmware for all devices
   name_add_mac_suffix: true
@@ -10,15 +10,21 @@ esphome:
     name: jesse.temperature_monitor
     version: "1.0"
 
+esp32:
+  board: nodemcu-32s
+
+# API is a requirement of the dashboard import. 
+api:
+
 # This should point to the public location of this yaml file.
 dashboard_import:
-  package_import_url: github://jesserockz/dummy-esphome-configs@v1/temperature_monitor.yaml
+  package_import_url: github://jesserockz/dummy-esphome-configs/temperature_monitor.yaml@v2
 
 wifi:
   # Set up a wifi access point
   ap:
     ssid: jesses_temperature_monitor
-    password: 12345678
+    password: "12345678"
 
 # In combination with the `ap` this allows the user
 # to provision wifi credentials to the device.
