@@ -28,7 +28,7 @@ ota:
 
 # This should point to the public location of this yaml file.
 dashboard_import:
-  package_import_url: github://jesserockz/dummy-esphome-configs/temperature-monitor.yaml@v6
+  package_import_url: github://esphome/dummy-esphome-configs/temperature-monitor.yaml@v7
 
 wifi:
   # Set up a wifi access point
