@@ -1,0 +1,9 @@
+{
+  "chipFamily": "ESP8266",
+  "parts": [
+    {
+      "path": "temp-monitor-8266/firmware.bin",
+      "offset": 0
+    }
+  ]
+}
