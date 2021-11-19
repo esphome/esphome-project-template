@@ -14,5 +14,6 @@ easily install your project onto their device.
 4. Update [.github/workflows/build.yml](.github/workflows/build.yml) to contain your own YAML config filename(s).
 5. Update [static/_config.yml](static/_config.yml) to change the title, description and basic theme of the generated website.
 6. Add more content to the [static/index.md](static/index.md) file to explain your project.
-    Make sure to leave the existing code tags in place so users get the install button.
+    Make sure to leave the installation code tags in place so users get the install button.
 7. Push your changes to the repository and GitHub Actions will automatically build and deploy your project.
+8. Go to the repository setting to enable [Pages](https://help.github.com/en/github/working-with-repository-pages/about-pages).
