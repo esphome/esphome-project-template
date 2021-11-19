@@ -1,6 +1,6 @@
 # These substitutions allow the end user to override certain values
 substitutions:
-  name: "jesses-temperature-monitor-8266"
+  name: "temp-monitor-8266"
 
 esphome:
   name: "${name}"
