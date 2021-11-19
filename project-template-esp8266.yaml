@@ -1,6 +1,6 @@
 # These substitutions allow the end user to override certain values
 substitutions:
-  name: "temp-monitor-8266"
+  name: "project-template-8266"
 
 esphome:
   name: "${name}"
@@ -11,7 +11,7 @@ esphome:
   # This will allow for (future) project identification,
   # configuration and updates.
   project:
-    name: jesse.temperature_monitor
+    name: esphome.project-template
     version: "1.0"
 
 esp8266:
@@ -28,12 +28,11 @@ ota:
 
 # This should point to the public location of this yaml file.
 dashboard_import:
-  package_import_url: github://esphome/esphome-config-template/temperature-monitor-esp8266.yaml@v6
+  package_import_url: github://esphome/esphome-project-template/project-template-esp8266.yaml@v6
 
 wifi:
   # Set up a wifi access point
   ap:
-    ssid: jesses_temperature_monitor
     password: "12345678"
 
 # In combination with the `ap` this allows the user

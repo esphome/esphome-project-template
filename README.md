@@ -1,6 +1,18 @@
-# ESPHome config template
+# ESPHome Project Template
 
-This repo serves as a template for creating a new ESPHome configuration to distribute.
+This repo serves as a template for creating a new ESPHome project.
 
-It includes a GitHub action that will automatically build the configuration(s) and deploys a website using GitHub pages
-using (ESP Web Tools)[] for users to easily install the firmware onto a device.
+It includes a GitHub workflow that will automatically build the configuration(s) and then deploys a simple 
+website via GitHub pages that utilises [ESP Web Tools](https://esphome.github.io/esp-web-tools/) for users to 
+easily install your project onto their device.
+
+## Instructions
+
+1. Use this repo template to [generate](https://github.com/esphome/esphome-project-template/generate) your own repository.
+2. Clone your new repository.
+3. Replace the `project-template-....yaml` files with your own YAML configuration(s).
+4. Update [.github/workflows/build.yml](.github/workflows/build.yml) to contain your own YAML config filename(s).
+5. Update [static/_config.yml](static/_config.yml) to change the title, description and basic theme of the generated website.
+6. Add more content to the [static/index.md](static/index.md) file to explain your project.
+    Make sure to leave the existing code tags in place so users get the install button.
+7. Push your changes to the repository and GitHub Actions will automatically build and deploy your project.

@@ -1,3 +1,4 @@
+# CHANGEME: Set these variable to your liking
 title: Temperature Monitor
 description: Powered by ESPHome and ESP Web Tools
-theme: jekyll-theme-minimal
+theme: jekyll-theme-slate
