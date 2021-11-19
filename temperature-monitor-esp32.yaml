@@ -1,0 +1,49 @@
+# These substitutions allow the end user to override certain values
+substitutions:
+  name: "jesses-temperature-monitor-32"
+
+esphome:
+  name: "${name}"
+  # Automatically add the mac address to the name
+  # so you can use a single firmware for all devices
+  name_add_mac_suffix: true
+
+  # This will allow for (future) project identification,
+  # configuration and updates.
+  project:
+    name: jesse.temperature_monitor
+    version: "1.0"
+
+esp32:
+  board: nodemcu-32s
+
+# To be able to get logs from the device via serial and api.
+logger:
+
+# API is a requirement of the dashboard import.
+api:
+
+# OTA is required for Over-the-Air updating
+ota:
+
+# This should point to the public location of this yaml file.
+dashboard_import:
+  package_import_url: github://esphome/esphome-config-template/temperature-monitor-esp32.yaml@v6
+
+wifi:
+  # Set up a wifi access point
+  ap:
+    ssid: jesses_temperature_monitor
+    password: "12345678"
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device.
+captive_portal:
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# Sets up the improv via serial client for Wi-Fi provisioning
+improv_serial:

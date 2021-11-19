@@ -1,7 +1,7 @@
 # These substitutions allow the end user to override certain values
 substitutions:
-  name: "jesses-temperature-monitor"
-  
+  name: "jesses-temperature-monitor-8266"
+
 esphome:
   name: "${name}"
   # Automatically add the mac address to the name
@@ -14,13 +14,13 @@ esphome:
     name: jesse.temperature_monitor
     version: "1.0"
 
-esp32:
-  board: nodemcu-32s
-  
+esp8266:
+  board: d1_mini
+
 # To be able to get logs from the device via serial and api.
 logger:
 
-# API is a requirement of the dashboard import. 
+# API is a requirement of the dashboard import.
 api:
 
 # OTA is required for Over-the-Air updating
@@ -28,7 +28,7 @@ ota:
 
 # This should point to the public location of this yaml file.
 dashboard_import:
-  package_import_url: github://jesserockz/dummy-esphome-configs/temperature-monitor.yaml@v6
+  package_import_url: github://esphome/esphome-config-template/temperature-monitor-esp8266.yaml@v6
 
 wifi:
   # Set up a wifi access point
@@ -40,7 +40,5 @@ wifi:
 # to provision wifi credentials to the device.
 captive_portal:
 
-# Sets up Bluetooth LE (Only on ESP32) to allow the user
-# to provision wifi credentials to the device.
-esp32_improv:
-  authorizer: none
+# Sets up the improv via serial client for Wi-Fi provisioning
+improv_serial:
