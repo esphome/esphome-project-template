@@ -1,0 +1,14 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - NAME: Build ESPHome firmware to verify configuration
+        uses: esphome/build-action@v1.1.0
+        with:
+          yaml_file: project-template-esp32.yaml,project-template-esp8266.yaml

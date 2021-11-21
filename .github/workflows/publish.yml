@@ -1,4 +1,4 @@
-name: Build
+name: Build and Publish ESPHome firmware and website
 
 on:
   push:
@@ -7,9 +7,11 @@ on:
 
 jobs:
   build:
-    uses: esphome/workflows/.github/workflows/build.yml@main
+    uses: esphome/workflows/.github/workflows/publish.yml@main
     with:
       # CHANGEME: Set the filenames of your config files here:
       files: project-template-esp32.yaml,project-template-esp8266.yaml
+      # CHANGEME: Set the name of your project here:
+      name: Template Project
     secrets:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
