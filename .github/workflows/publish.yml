@@ -14,4 +14,4 @@ jobs:
       # CHANGEME: Set the name of your project here:
       name: Template Project
     secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
