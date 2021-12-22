@@ -9,6 +9,7 @@ easily install your project onto their device.
 ## Instructions
 
 1. Use this repo template to [generate](https://github.com/esphome/esphome-project-template/generate) your own repository.
+   - Make sure to check `Include all branches` so that GitHub Pages is automatically enabled.
 2. Clone your new repository.
 3. Replace the `project-template-....yaml` files with your own YAML configuration(s).
 4. 
@@ -18,4 +19,3 @@ easily install your project onto their device.
 6. Add more content to the [static/index.md](static/index.md) file to explain your project.
     Make sure to leave the installation code tags in place so users get the install button.
 7. Push your changes to the repository and GitHub Actions will automatically build and deploy your project.
-8. Go to the repository setting to enable [Pages](https://help.github.com/en/github/working-with-repository-pages/about-pages).
