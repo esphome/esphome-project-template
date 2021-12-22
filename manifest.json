@@ -1,6 +1,6 @@
 {
   "name": "Template Project",
-  "version": "2021.11.1",
+  "version": "2021.12.1",
   "home_assistant_domain": "esphome",
   "new_install_skip_erase": false,
   "builds": [
