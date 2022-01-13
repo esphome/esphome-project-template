@@ -11,7 +11,7 @@ easily install your project onto their device.
 1. Use this repo template to [generate](https://github.com/esphome/esphome-project-template/generate) your own repository.
    - Make sure to check `Include all branches` so that GitHub Pages is automatically enabled.
 2. Clone your new repository.
-3. Replace the `project-template-....yaml` files with your own YAML configuration(s).
+3. Add your project specific YAML configuration(s) along with the contents of the `project-template-....yaml` files, taking note of the comments in this template file and name accordingly.
 4. 
     a. Update [.github/workflows/publish.yml](.github/workflows/publish.yml) to contain your own YAML config filename(s).
     b. Update [.github/workflows/ci.yml](.github/workflows/ci.yml) to contain your own YAML config filename(s).
