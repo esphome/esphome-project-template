@@ -1,0 +1,21 @@
+{
+  "chipFamily": "ESP32",
+  "parts": [
+    {
+      "path": "project-template-esp32/firmware.bin",
+      "offset": 65536
+    },
+    {
+      "path": "project-template-esp32/bootloader_dio_40m.bin",
+      "offset": 4096
+    },
+    {
+      "path": "project-template-esp32/partitions.bin",
+      "offset": 32768
+    },
+    {
+      "path": "project-template-esp32/boot_app0.bin",
+      "offset": 57344
+    }
+  ]
+}
