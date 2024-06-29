@@ -1,14 +1,11 @@
-# These substitutions allow the end user to override certain values
-substitutions:
-  name: "project-template"
-
 esphome:
-  name: "${name}"
+  name: project-template
+  friendly_name: Project Template
   # Automatically add the mac address to the name
   # so you can use a single firmware for all devices
   name_add_mac_suffix: true
 
-  # This will allow for (future) project identification,
+  # This will allow for project identification,
   # configuration and updates.
   project:
     name: esphome.project-template
@@ -17,7 +14,7 @@ esphome:
 esp32:
   board: esp32dev
   framework:
-    type: arduino
+    type: esp-idf
 
 # To be able to get logs from the device via serial and api.
 logger:
@@ -27,6 +24,7 @@ api:
 
 # OTA is required for Over-the-Air updating
 ota:
+  - platform: esphome
 
 # This should point to the public location of this yaml file.
 dashboard_import:
@@ -43,7 +41,7 @@ captive_portal:
 
 ##########################################################
 # Most projects should not remove anything from above here
-# and should just modify the name, project name/version 
+# and should just modify the name, project name/version
 # and git url for the dashboard_import
 ##########################################################
 
