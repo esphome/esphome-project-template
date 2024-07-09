@@ -10,12 +10,13 @@ jobs:
     strategy:
       matrix:
         file:
-          - project-template-esp32.yaml
-          - project-template-esp8266.yaml
+          - project-template-esp32-release.yaml
+          - project-template-esp32-c3-release.yaml
+          - project-template-esp32-s3-release.yaml
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4.1.7
       - name: Build ESPHome firmware to verify configuration
-        uses: esphome/build-action@v3.1.0
+        uses: esphome/build-action@v3.2.0
         with:
           yaml_file: ${{ matrix.file }}
