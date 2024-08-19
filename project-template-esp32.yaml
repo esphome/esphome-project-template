@@ -5,12 +5,6 @@ esphome:
   # so you can use a single firmware for all devices
   name_add_mac_suffix: true
 
-  # This will allow for project identification,
-  # configuration and updates.
-  project:
-    name: esphome.project-template
-    version: "1.0"
-
 esp32:
   board: esp32dev
   framework:
@@ -33,9 +27,3 @@ wifi:
 # In combination with the `ap` this allows the user
 # to provision wifi credentials to the device.
 captive_portal:
-
-##########################################################
-# Most projects should not remove anything from above here
-# and should just modify the name, project name/version
-# and git url for the dashboard_import
-##########################################################

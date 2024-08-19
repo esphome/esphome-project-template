@@ -5,14 +5,8 @@ esphome:
   # so you can use a single firmware for all devices
   name_add_mac_suffix: true
 
-  # This will allow for project identification,
-  # configuration and updates.
-  project:
-    name: esphome.project-template
-    version: "1.0"
-
 esp32:
-  board: esp32-c3-devkitm-1
+  board: esp32-s3-devkitc-1
   framework:
     type: esp-idf
 
