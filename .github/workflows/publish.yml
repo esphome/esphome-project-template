@@ -50,6 +50,8 @@ jobs:
           source: ./static
           destination: ./output
 
+      - run: tree
+
       - name: Copy firmware and manifest
         run: cp -r files/${{ needs.build.outputs.version }}/* output/
 
