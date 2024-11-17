@@ -2,6 +2,9 @@ name: CI
 
 on:
   pull_request:
+    paths:
+      - '*.yaml'
+      - '.github/workflows/ci.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
