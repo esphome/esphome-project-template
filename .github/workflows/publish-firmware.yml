@@ -21,32 +21,8 @@ jobs:
 
   upload-to-release:
     name: Upload to Release
+    uses: esphome/workflows/.github/workflows/upload-to-gh-release.yml@main
     needs:
       - build-firmware
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Artifact
-        uses: actions/download-artifact@v4.1.8
-        with:
-          path: files
-      - name: Copy files to output
-        run: |-
-          mkdir output
-          version="${{ needs.build-firmware.outputs.version }}"
-          pushd files
-          for device in *; do
-            pushd $device
-            pushd $version
-            cp manifest.json ../../../output/$device.manifest.json
-            for bin in *.bin; do
-              md5sum $bin | head -c 32 > ../../../output/$bin.md5
-              cp $bin ../../../output/
-            done
-            popd
-            popd
-          done
-          popd
-      - name: Upload files to release
-        uses: softprops/action-gh-release@v2.1.0
-        with:
-          files: output/*
+    with:
+      version: ${{ github.event.release.tag_name }}"
