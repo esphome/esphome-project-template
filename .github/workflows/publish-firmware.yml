@@ -25,4 +25,4 @@ jobs:
     needs:
       - build-firmware
     with:
-      version: ${{ github.event.release.tag_name }}"
+      version: ${{ github.event.release.tag_name }}
