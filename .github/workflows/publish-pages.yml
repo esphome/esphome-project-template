@@ -38,10 +38,6 @@ jobs:
           source: ./static
           destination: ./output
 
-      - run: |-
-          tree
-          ls -lR output
-
       - name: Fetch firmware files
         uses: robinraju/release-downloader@v1.11
         with:
