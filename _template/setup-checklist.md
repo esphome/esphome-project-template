@@ -16,5 +16,10 @@
     - [ ] Update the manifest path. This will be `<combined-name>.manifest.json` if you use the `combined-name` in the publish-firmware.yml, otherwise it will be `<name>.manifest.json` where `<name>` is the value from `esphome` -> `name` in your YAML configuration.
     - [ ] Add some more content to the page.
 - [ ] Set up GitHub Pages
-    - [ ] Go to **Repository Settings** -> **Pages** ([click here](../settings/pages)) and set the **Build and Deployment** -> **Source** to `GitHub Actions`.
+    1. Go to **Repository Settings** -> **Pages** ([click here](../settings/pages)).
+    2. Change the **Build and Deployment** -> **Source** to `GitHub Actions`.
+- [ ] Add write permission to for GitHub Actions
+    1. Go to **Repository Settings** -> **Actions** ([click here](../settings/actions)).
+    2. Change **Workflow permissions** to be `Read and write permissions`.
+    3. Hit the save button.
 - [ ] Make a [release](../releases/new) to trigger the first build and deploy the website.
