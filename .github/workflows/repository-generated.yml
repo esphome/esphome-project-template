@@ -9,6 +9,9 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     if: ${{ !github.event.repository.is_template }}
+    permissions:
+      issues: write
+      contents: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
