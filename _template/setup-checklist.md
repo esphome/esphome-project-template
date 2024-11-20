@@ -18,8 +18,4 @@
 - [ ] Set up GitHub Pages
     1. Go to **Repository Settings** -> **Pages** ([click here](../settings/pages)).
     2. Change the **Build and Deployment** -> **Source** to `GitHub Actions`.
-- [ ] Add write permission to for GitHub Actions
-    1. Go to **Repository Settings** -> **Actions** ([click here](../settings/actions)).
-    2. Change **Workflow permissions** to be `Read and write permissions`.
-    3. Hit the save button.
 - [ ] Make a [release](../releases/new) to trigger the first build and deploy the website.
