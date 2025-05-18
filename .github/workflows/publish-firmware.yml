@@ -16,6 +16,7 @@ jobs:
       files: |
         project-template-esp32.factory.yaml
         project-template-esp32-c3.factory.yaml
+        project-template-esp32-c6.factory.yaml
         project-template-esp32-s3.factory.yaml
       esphome-version: 2025.4.0
       combined-name: project-template
