@@ -1,0 +1,417 @@
+# QuietCool Smart Attic Fan Control Configuration
+# This configuration file enables control of a QuietCool Smart Attic Fan Control via ESPHome
+# It provides BLE connectivity, fan speed control, timer functionality, and sensor monitoring
+
+# Core Configuration
+# ----------------------------------------
+# Define BLE service and characteristic UUIDs used for communication with the fan
+substitutions:
+  service_uuid: "000000ff-0000-1000-8000-00805f9b34fb"
+  characteristic_uuid: "0000ff01-0000-1000-8000-00805f9b34fb"
+
+# Basic ESPHome device configuration
+esphome:
+  name: quietcool-fan
+  friendly_name: QuietCool Fan
+  name_add_mac_suffix: true
+
+# Hardware configuration for ESP32 development board
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable Home Assistant API integration
+api:
+
+# Enable Over-The-Air updates
+ota:
+  - platform: esphome
+
+# Enable captive portal for initial WiFi setup
+captive_portal:
+
+# WiFi configuration with fallback access point
+wifi:
+  ap:
+
+# BLE configuration for connecting to the QuietCool fan
+# Uses passive scanning to preserve battery life
+esp32_ble_tracker:
+  scan_parameters:
+    active: false
+
+# BLE client configuration for maintaining connection with the fan
+# Automatically connects and sends login credentials on connection
+ble_client:
+  - mac_address: !lambda return id(mac_address).state;
+    id: qc_ble
+    auto_connect: true
+    on_connect:
+      - delay: 2s
+      - script.execute:
+          id: send_ble_msg
+          msg: !lambda return "{\"Api\":\"Login\",\"PhoneID\":\"" + id(pair_id).state + "\"}";
+      - script.wait: send_ble_msg
+
+# Global Variables and Utilities
+# ----------------------------------------
+# Enable JSON parsing for BLE communication
+json:
+
+# Global variable to store BLE messages
+globals:
+  - id: ble_message
+    type: std::string
+    initial_value: ""
+    restore_value: no
+
+# Configure logging level
+logger:
+  level: INFO
+
+# Fan Control Scripts
+# ----------------------------------------
+# Scripts handle different aspects of fan control:
+# - set_mode: Changes fan operation mode (Timer/Idle)
+# - set_timer: Configures timer duration and speed
+# - send_ble_msg: Handles BLE message transmission
+script:
+  - id: set_mode
+    parameters:
+      mode: string
+    then:
+      - script.execute:
+          id: send_ble_msg
+          msg: !lambda return "{\"Api\":\"SetMode\",\"Mode\":\"" + mode + "\"}";
+      - script.wait: send_ble_msg
+  - id: set_timer
+    parameters:
+      hours: int
+      minutes: int
+      speed: string
+    then:
+      - script.execute:
+          id: send_ble_msg
+          msg: !lambda return "{\"Api\":\"SetTime\",\"SetHour\":" + std::to_string(hours) + ",\"SetMinute\":" + std::to_string(minutes) + ",\"SetTime_Range\":\"" + speed + "\"}";
+      - script.wait: send_ble_msg
+  - id: send_ble_msg
+    parameters:
+      msg: string
+    mode: queued
+    then:
+      - ble_client.ble_write:
+          id: qc_ble
+          service_uuid: ${service_uuid}
+          characteristic_uuid: ${characteristic_uuid}
+          value: !lambda |-
+              ESP_LOGI("quietcool", "Sending BLE message: %s", msg.c_str());
+              return std::vector<uint8_t>(msg.begin(), msg.end());
+      - delay: 1s
+
+# Fan Component Configuration
+# ----------------------------------------
+# Template-based fan platform that provides:
+# - Two speed levels (LOW/HIGH)
+# - Timer-based operation
+# - State restoration after power loss
+fan:
+  - platform: template
+    name: "QuietCool Fan"
+    id: quietcool_fan
+    has_direction: false
+    has_oscillating: false
+    speed_count: 2
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_speed_set:
+      - logger.log: "Setting speed"
+      - script.execute:
+          id: set_timer
+          speed: !lambda 'return x == 2 ? "HIGH" : "LOW";'
+          hours: 3
+          minutes: 0
+      - script.wait: set_timer
+      - script.execute:
+          id: set_mode
+          mode: "Timer"
+      - script.wait: set_mode
+    on_turn_on:
+      - logger.log: "Turning on timer"
+      - script.execute:
+          id: set_mode
+          mode: "Timer"
+      - script.wait: set_mode
+    on_turn_off:
+      - logger.log: "Turning off"
+      - script.execute:
+          id: set_mode
+          mode: "Idle"
+      - script.wait: set_mode
+
+# Timer Controls
+# ----------------------------------------
+# Provides user-adjustable timer settings:
+# - Hours (0-23)
+# - Minutes (0-59)
+# Updates are sent to the fan immediately when values change
+number:
+  - platform: template
+    name: "Timer Hours"
+    id: timer_hours
+    min_value: 0
+    max_value: 23
+    step: 1
+    unit_of_measurement: "h"
+    device_class: duration
+    optimistic: true
+    initial_value: 3
+    on_value:
+      - script.execute:
+          id: set_timer
+          hours: !lambda return x;
+          minutes: !lambda return id(timer_minutes).state;
+          speed: &set_timer_speed !lambda 'return id(quietcool_fan).speed == 2 ? "HIGH" : "LOW";'
+
+  - platform: template
+    name: "Timer Minutes"
+    id: timer_minutes
+    min_value: 0
+    max_value: 59
+    step: 1
+    unit_of_measurement: "m"
+    device_class: duration
+    optimistic: true
+    initial_value: 0
+    on_value:
+      - script.execute:
+          id: set_timer
+          hours: !lambda return id(timer_hours).state;
+          minutes: !lambda return x;
+          speed: *set_timer_speed
+
+# Device Configuration
+# ----------------------------------------
+# Stores device pairing ID and provides pairing button
+# The pair ID is a 16-character hex string used for device authentication
+text:
+  - id: pair_id
+    name: "Pair ID"
+    platform: template
+    mode: text
+    min_length: 16
+    max_length: 16
+    optimistic: true
+    initial_value: "a1b2c1d2a2b1c2d1"
+    restore_value: true
+  - id: mac_address
+    name: "MAC Address"
+    platform: template
+    mode: text
+    min_length: 17
+    max_length: 17
+    optimistic: true
+    initial_value: "00:00:00:00:00:00"
+    restore_value: true
+
+button:
+  - platform: template
+    name: "Pair BLE"
+    id: pair_button
+    on_press:
+      then:
+        - script.execute:
+            id: send_ble_msg
+            msg: !lambda return "{\"Api\":\"Pair\",\"PhoneID\":\"" + id(pair_id).state + "\"}";
+        - script.wait: send_ble_msg
+
+# Sensor Templates and Configurations
+# ----------------------------------------
+# Define reusable sensor templates for temperature and humidity
+# These sensors receive data from the fan's built-in sensors
+.humidity_sensor: &humidity_sensor
+  platform: template
+  unit_of_measurement: "%"
+  device_class: humidity
+  state_class: measurement
+
+.temperature_sensor: &temperature_sensor
+  platform: template
+  unit_of_measurement: "°F"
+  device_class: temperature
+  state_class: measurement
+
+sensor:
+  - <<: *humidity_sensor
+    name: humidity
+    id: humidity
+  - <<: *temperature_sensor
+    name: temperature
+    id: temperature
+  - <<: *temperature_sensor
+    name: temp_sample
+    id: temp_sample
+  - <<: *humidity_sensor
+    name: humidity_sample
+    id: humidity_sample
+  - <<: *temperature_sensor
+    name: get_temp_h
+    id: get_temp_h
+    disabled_by_default: true
+  - <<: *humidity_sensor
+    name: get_hum_h
+    id: get_hum_h
+    disabled_by_default: true
+  - <<: *temperature_sensor
+    name: get_temp_l
+    id: get_temp_l
+    disabled_by_default: true
+  - <<: *humidity_sensor
+    name: get_hum_l
+    id: get_hum_l
+    disabled_by_default: true
+  - platform: template
+    name: get_hour
+    id: get_hour
+    unit_of_measurement: "h"
+    device_class: duration
+    accuracy_decimals: 0
+    disabled_by_default: true
+  - platform: template
+    name: get_minute
+    id: get_minute
+    unit_of_measurement: "m"
+    device_class: duration
+    accuracy_decimals: 0
+    disabled_by_default: true
+
+# Text Sensors and BLE Data Handling
+# ----------------------------------------
+# Various text sensors for monitoring fan state and settings
+# The BLE data handler parses incoming JSON messages and updates appropriate sensors
+text_sensor:
+  - platform: template
+    name: mode
+    id: mode
+  - platform: template
+    name: range
+    id: range
+  - platform: template
+    name: fan_type
+    id: fan_type
+    disabled_by_default: true
+  - platform: template
+    name: name
+    id: name
+    disabled_by_default: true
+  - platform: template
+    name: model
+    id: model
+    disabled_by_default: true
+  - platform: template
+    name: serial_num
+    id: serial_num
+    disabled_by_default: true
+  - platform: template
+    name: sensor_state
+    id: sensor_state
+    disabled_by_default: true
+  - platform: template
+    name: pair_state
+    id: pair_state
+  - platform: template
+    name: get_hum_range
+    id: get_hum_range
+    disabled_by_default: true
+  - platform: template
+    name: get_time_range
+    id: get_time_range
+    disabled_by_default: true
+  - platform: ble_client
+    name: "BLE Data"
+    id: quietcool_ble_data
+    service_uuid: ${service_uuid}
+    characteristic_uuid: ${characteristic_uuid}
+    notify: true
+    internal: true
+    on_notify:
+      - lambda: |-
+            static std::string& accumulated = id(ble_message);
+            accumulated += x;
+            if (!x.empty() && x.back() == '}') {
+              id(quietcool_ble_data).publish_state(accumulated);
+              ESP_LOGD("quietcool", "Received JSON data: %s", accumulated.c_str());
+              bool parsed = false;
+              json::parse_json(accumulated, [&parsed](JsonObject root) -> bool {
+                parsed = true;
+                
+                // Iterate through all JSON keys
+                for (JsonObject::iterator it = root.begin(); it != root.end(); ++it) {
+                  std::string key = it->key().c_str();
+                  std::string transformed;
+                  
+                  // Convert to snake_case, handling existing underscores
+                  for (size_t i = 0; i < key.length(); i++) {
+                    if (std::isupper(key[i])) {
+                      // Add underscore before uppercase letters, but not if:
+                      // - it's the first character
+                      // - previous character was already an underscore
+                      if (i > 0 && key[i-1] != '_') {
+                        transformed += '_';
+                      }
+                      transformed += std::tolower(key[i]);
+                    } else {
+                      transformed += key[i];
+                    }
+                  }
+                  
+                  // Try to find a matching sensor
+                  auto *sensor = App.get_sensor_by_key(fnv1_hash(transformed.c_str()));
+                  if (sensor != nullptr) {
+                    float value = it->value().as<float>();
+                    sensor->publish_state(value);
+                    continue;
+                  }
+                  
+                  // Try to find a matching text sensor
+                  auto *text_sensor = App.get_text_sensor_by_key(fnv1_hash(transformed.c_str()));
+                  if (text_sensor != nullptr) {
+                    std::string value = it->value().as<std::string>();
+                    text_sensor->publish_state(value);
+                    continue;
+                  }
+                  
+                  ESP_LOGD("quietcool", "No sensor found for key: %s", transformed.c_str());
+                }
+                
+                return true;
+              });
+              if (!parsed) {
+                ESP_LOGW("quietcool", "Failed to parse JSON: %s", accumulated.c_str());
+              }
+              accumulated.clear();
+            }
+
+# Periodic Updates
+# ----------------------------------------
+# Polls the fan every 15 seconds for:
+# - Current parameters
+# - Work state
+# - Fan information
+# This ensures the Home Assistant interface stays in sync with the actual fan state
+interval:
+  - interval: 15s
+    then:
+      - script.execute:
+          id: send_ble_msg
+          msg: !lambda return "{\"Api\":\"GetParameter\"}";
+      - script.wait: send_ble_msg
+      - delay: 5s
+      - script.execute:
+          id: send_ble_msg
+          msg: !lambda return "{\"Api\":\"GetWorkState\"}";
+      - script.wait: send_ble_msg
+      - delay: 5s
+      - script.execute:
+          id: send_ble_msg
+          msg: !lambda return "{\"Api\":\"GetFanInfo\"}";
+      - script.wait: send_ble_msg

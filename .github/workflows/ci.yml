@@ -20,13 +20,8 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        #### Modify below here to match your project ####
         file:
-          - project-template-esp32
-          - project-template-esp32-c3
-          - project-template-esp32-c6
-          - project-template-esp32-s3
-        #### Modify above here to match your project ####
+          - quietcool-smart-attic-fan-control
 
         esphome-version:
           - stable
