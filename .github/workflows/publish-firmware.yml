@@ -18,7 +18,7 @@ jobs:
         project-template-esp32-c3.factory.yaml
         project-template-esp32-c6.factory.yaml
         project-template-esp32-s3.factory.yaml
-      esphome-version: 2025.8.0
+      esphome-version: 2025.11.3
       combined-name: project-template
       #### Modify above here to match your project ####
 
