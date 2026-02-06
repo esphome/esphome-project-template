@@ -33,4 +33,4 @@ ota:
 update:
   - platform: http_request
     name: Firmware
-    source: https://github.com/esphome/esphome-project-template/releases/latest/download/project-template.manifest.json
+    source: https://esphome.github.io/esphome-project-template/firmware/project-template.manifest.json
