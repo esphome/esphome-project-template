@@ -1,0 +1,40 @@
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release-drafter:
+    name: Release Drafter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0  # need all tags to compute the next patch
+
+      - name: Compute next version
+        id: version
+        run: |
+          prefix="$(date -u +%y.%-m)"
+          latest="$(git tag --list "${prefix}.*" --sort=-v:refname | head -n1)"
+          if [ -z "$latest" ]; then
+            next="${prefix}.1"
+          else
+            patch="${latest##*.}"
+            next="${prefix}.$((patch + 1))"
+          fi
+          echo "version=$next" >> "$GITHUB_OUTPUT"
+
+      - uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32  # v7.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}
