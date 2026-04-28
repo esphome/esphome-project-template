@@ -39,11 +39,9 @@ jobs:
           destination: ./output
 
       - name: Fetch firmware files
-        uses: robinraju/release-downloader@28fc21f50d76778e7023361aa1f863e717d3d56f  # v1.13
-        with:
-          latest: true
-          fileName: '*'
-          out-file-path: output/firmware
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download --pattern '*' --dir output/firmware
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9  # v5.0.0
