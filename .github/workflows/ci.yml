@@ -36,12 +36,12 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
       - name: ESPHome ${{ matrix.esphome-version }}
-        uses: esphome/build-action@f0a331817f5535854a10a42621b6a8b7ebe95c4c  # v7.2.0
+        uses: esphome/build-action@4ef4722a2935eac47b7e227fe0e1f8e0f8afcc42  # v7.3.0
         with:
           yaml-file: ${{ matrix.file }}.yaml
           version: ${{ matrix.esphome-version }}
       - name: ESPHome ${{ matrix.esphome-version }} Factory
-        uses: esphome/build-action@f0a331817f5535854a10a42621b6a8b7ebe95c4c  # v7.2.0
+        uses: esphome/build-action@4ef4722a2935eac47b7e227fe0e1f8e0f8afcc42  # v7.3.0
         with:
           yaml-file: ${{ matrix.file }}.factory.yaml
           version: ${{ matrix.esphome-version }}
