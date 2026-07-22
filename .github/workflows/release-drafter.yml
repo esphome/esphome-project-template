@@ -32,7 +32,7 @@ jobs:
           fi
           echo "version=$next" >> "$GITHUB_OUTPUT"
 
-      - uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32  # v7.2.0
+      - uses: release-drafter/release-drafter@eada3c96a64734dd381cfbda23511034e328ddb0  # v7.6.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
