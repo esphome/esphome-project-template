@@ -1,3 +1,5 @@
+name-template: "$RESOLVED_VERSION"
+tag-template: "$RESOLVED_VERSION"
 categories:
   - title: "Breaking Changes"
     label: "breaking-change"
@@ -6,7 +8,17 @@ categories:
     labels:
       - "dependencies"
 
+# Version is calculated externally (calver YY.M.N) and passed in as an input,
+# so the version-resolver here is unused. The workflow overrides
+# `name`, `tag`, and `version`.
+
 template: |
+  > [!CAUTION]
+  > **DO NOT PUBLISH THIS RELEASE YET!**
+  > Build assets have not been uploaded. Wait for the build workflow to complete
+  > and this notice to be removed before publishing.
+  <!-- ASSETS_PENDING -->
+
   ## What's Changed
 
   $CHANGES

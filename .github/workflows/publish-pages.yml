@@ -9,14 +9,13 @@ on:
       - '.github/workflows/publish-pages.yml'
   workflow_run:
     workflows:
-      - Publish Firmware
+      - Release
     types:
       - completed
   pull_request:
     paths:
       - 'static/**'
       - '.github/workflows/publish-pages.yml'
-
 
 permissions: {}
 
@@ -27,6 +26,10 @@ concurrency:
 jobs:
   build:
     name: Build
+    # Skip if the Release run that triggered us failed; other events always run.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read  # actions/checkout and gh release download
