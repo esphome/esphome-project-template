@@ -5,37 +5,19 @@ on:
     branches:
       - main
 
-permissions: {}
+permissions:
+  contents: write  # create/update the draft release
+  pull-requests: read  # categorize merged pull requests
+
+concurrency:
+  group: release-drafter
+  cancel-in-progress: false
 
 jobs:
   release-drafter:
-    name: Release Drafter
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write  # create/update the draft release
-      pull-requests: read  # categorize merged pull requests
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          fetch-depth: 0  # need all tags to compute the next patch
-
-      - name: Compute next version
-        id: version
-        run: |
-          prefix="$(date -u +%y.%-m)"
-          latest="$(git tag --list "${prefix}.*" --sort=-v:refname | head -n1)"
-          if [ -z "$latest" ]; then
-            next="${prefix}.1"
-          else
-            patch="${latest##*.}"
-            next="${prefix}.$((patch + 1))"
-          fi
-          echo "version=$next" >> "$GITHUB_OUTPUT"
-
-      - uses: release-drafter/release-drafter@34d80673e067bdc0c24568d3af899c216adcfaa9  # v7.7.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag: ${{ steps.version.outputs.version }}
-          name: ${{ steps.version.outputs.version }}
+    name: Update draft release
+    # Computes the next CalVer version (YY.M.N, reusing the current draft's
+    # sequence number) and runs release-drafter with it. Reads this repo's
+    # .github/release-drafter.yml for the changelog categories, then empties
+    # the draft's assets so the Build workflow can attach a fresh set.
+    uses: esphome/workflows/.github/workflows/draft-calver-release.yml@0fdd5e311b7e744069166696072a1a9cbc5fbeb6  # 2026.8.1

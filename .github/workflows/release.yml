@@ -1,0 +1,173 @@
+name: Release
+
+# Publishes the draft release that Release Drafter + Build prepared. This is
+# implemented inline (rather than calling esphome/workflows) so it works in
+# any account with only the default GITHUB_TOKEN: no ESPHome GitHub App, no
+# extra secrets.
+#
+# Because a release published with GITHUB_TOKEN does not emit a downstream
+# `release: published` event (GitHub's anti-recursion rule), Publish Pages is
+# triggered off `workflow_run` of this workflow instead of that event.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish (defaults to the most recent draft)"
+        required: false
+        type: string
+
+permissions:
+  contents: write  # read the draft, replace its manifest assets, publish it
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || 'latest-draft' }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Publish draft release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve draft release
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if ! releases=$(gh api "repos/${GH_REPO}/releases?per_page=100"); then
+            echo "::error::Failed to list releases"
+            exit 1
+          fi
+          tag="${INPUT_TAG}"
+          if [[ -z "${tag}" ]]; then
+            # Ignore drafts whose tag was reset to an untagged-* placeholder
+            # (a stray PATCH without tag_name causes this) — publishing one
+            # would create a release under the placeholder tag.
+            tag=$(jq -r \
+              '[.[] | select(.draft == true and (.tag_name | startswith("untagged-") | not))]
+                | first | .tag_name // ""' \
+              <<< "${releases}")
+          fi
+          if [[ -z "${tag}" || "${tag}" == "null" ]]; then
+            echo "::error::No draft release found"
+            exit 1
+          fi
+          release=$(jq --arg tag "${tag}" \
+            '[.[] | select(.tag_name == $tag and .draft == true)] | first' <<< "${releases}")
+          if [[ -z "${release}" || "${release}" == "null" ]]; then
+            echo "::error::Draft release ${tag} not found"
+            exit 1
+          fi
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "release_id=$(jq -r '.id' <<< "${release}")" >> "$GITHUB_OUTPUT"
+          # Do NOT use the draft's html_url: for a draft it always points at
+          # an untagged-* placeholder that 404s once the release is
+          # published. The final URL is deterministic from the tag.
+          echo "url=https://github.com/${GH_REPO}/releases/tag/${tag}" >> "$GITHUB_OUTPUT"
+          {
+            echo "body<<RELEASE_BODY_EOF"
+            jq -r '.body' <<< "${release}"
+            echo "RELEASE_BODY_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Resolved draft release: ${tag}"
+
+      - name: Download manifest assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ steps.find.outputs.release_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p assets
+          # Work with the release id rather than `gh release download <tag>`:
+          # gh resolves draft tags via the singular releases/tags/{tag}
+          # endpoint, which is unreliable for drafts, while lookups by id
+          # always work.
+          if ! assets=$(gh api "repos/${GH_REPO}/releases/${RELEASE_ID}/assets" \
+            --paginate \
+            --jq '.[] | select(.name | endswith(".manifest.json")) | "\(.id)\t\(.name)"'); then
+            echo "::error::Failed to list draft release assets"
+            exit 1
+          fi
+          if [[ -z "${assets}" ]]; then
+            echo "::error::No *.manifest.json assets found on draft release"
+            exit 1
+          fi
+          # --allow-escape-sequences (gh >= 2.97.0): gh refuses to write a
+          # response body containing terminal escape bytes, which a manifest
+          # carrying an escape byte in the embedded release body would trip.
+          while IFS=$'\t' read -r asset_id asset_name; do
+            echo "Downloading ${asset_name}"
+            gh api --allow-escape-sequences -H "Accept: application/octet-stream" \
+              "repos/${GH_REPO}/releases/assets/${asset_id}" \
+              > "assets/${asset_name}"
+          done <<< "${assets}"
+
+      - name: Patch manifests with current release body
+        env:
+          RELEASE_SUMMARY: ${{ steps.find.outputs.body }}
+          RELEASE_URL: ${{ steps.find.outputs.url }}
+        run: |
+          set -euo pipefail
+          mkdir -p patched
+          for manifest in assets/*.manifest.json; do
+            jq --arg summary "${RELEASE_SUMMARY}" --arg url "${RELEASE_URL}" \
+              '.builds[].ota |= (.summary = $summary | .release_url = $url)' \
+              "${manifest}" > "patched/$(basename "${manifest}")"
+          done
+
+      - name: Re-upload patched manifests to draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ steps.find.outputs.release_id }}
+        run: |
+          set -euo pipefail
+          # Upload by release id rather than `gh release upload <tag>
+          # --clobber` for the same reason as the download step: draft-by-tag
+          # resolution is unreliable. Clobber semantics are replicated by
+          # deleting any same-named asset before uploading.
+          if ! existing=$(gh api "repos/${GH_REPO}/releases/${RELEASE_ID}/assets" \
+            --paginate \
+            --jq '.[] | "\(.id)\t\(.name)"'); then
+            echo "::error::Failed to list draft release assets"
+            exit 1
+          fi
+          for manifest in patched/*.manifest.json; do
+            name=$(basename "${manifest}")
+            asset_id=$(awk -F'\t' -v name="${name}" '$2 == name {print $1; exit}' <<< "${existing}")
+            if [[ -n "${asset_id}" ]]; then
+              echo "Deleting existing asset ${name} (${asset_id})"
+              gh api "repos/${GH_REPO}/releases/assets/${asset_id}" \
+                --method DELETE --silent
+            fi
+            echo "Uploading ${name}"
+            gh api --method POST \
+              -H "Content-Type: application/json" \
+              "https://uploads.github.com/repos/${GH_REPO}/releases/${RELEASE_ID}/assets?name=${name}" \
+              --input "${manifest}" --silent
+          done
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ steps.find.outputs.release_id }}
+          TAG: ${{ steps.find.outputs.tag }}
+        run: |
+          set -euo pipefail
+          # Publish by id, not `gh release edit <tag> --draft=false`: besides
+          # the unreliable draft-by-tag resolution, gh sends a PATCH with only
+          # draft=false — and updating a draft without re-sending tag_name
+          # resets its tag to an untagged-* placeholder, which would then be
+          # published as the release tag.
+          gh api "repos/${GH_REPO}/releases/${RELEASE_ID}" \
+            --method PATCH \
+            --field "tag_name=${TAG}" \
+            --field "name=${TAG}" \
+            --field "draft=false" \
+            --silent
+          echo "Published ${TAG}"

@@ -1,0 +1,34 @@
+name: Build
+
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Release Drafter"]
+    types: [completed]
+
+# The called workflow's draft-release jobs (read draft info, upload assets,
+# strip the pending warning) need contents: write; they only run on
+# workflow_run events. Fork pull requests still get a read-only token.
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'workflow_run' && 'release-drafter' || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build to Draft Release
+    # Builds the factory configs and — when triggered by a successful Release
+    # Drafter run — uploads the firmware to the current draft release. On
+    # pull_request / workflow_dispatch it only builds.
+    uses: esphome/workflows/.github/workflows/build-to-draft-release.yml@0fdd5e311b7e744069166696072a1a9cbc5fbeb6  # 2026.8.1
+    with:
+      #### Modify below here to match your project ####
+      # Every *.factory.yaml in the repo is discovered automatically; the
+      # builds are combined into a single manifest published under this name.
+      # Remove combined-name to publish one manifest per file instead.
+      combined-name: project-template
+      esphome-version: 2026.8.1
+      #### Modify above here to match your project ####
