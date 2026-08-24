@@ -8,6 +8,8 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -16,6 +18,8 @@ jobs:
   ci:
     name: Building ${{ matrix.file }} / ${{ matrix.esphome-version }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read  # actions/checkout
     strategy:
       fail-fast: false
       max-parallel: 3

@@ -5,13 +5,15 @@ on:
     branches:
       - main
 
+permissions: {}
+
 jobs:
   setup:
     runs-on: ubuntu-latest
     if: ${{ !github.event.repository.is_template }}
     permissions:
-      issues: write
-      contents: write
+      issues: write  # create the setup checklist issue
+      contents: write  # push the template cleanup commit
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1

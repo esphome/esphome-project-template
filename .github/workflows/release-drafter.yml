@@ -5,14 +5,15 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-  pull-requests: read
+permissions: {}
 
 jobs:
   release-drafter:
     name: Release Drafter
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # create/update the draft release
+      pull-requests: read  # categorize merged pull requests
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1

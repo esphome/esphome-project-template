@@ -4,12 +4,13 @@ on:
   release:
     types: [published]
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   build-firmware:
     name: Build Firmware
+    permissions:
+      contents: read  # actions/checkout
     uses: esphome/workflows/.github/workflows/build.yml@9f6577fd37b5cf773ab1b9be929714a0dcd15661  # 2026.7.0
     with:
       #### Modify below here to match your project ####
@@ -28,6 +29,8 @@ jobs:
 
   upload-to-release:
     name: Upload to Release
+    permissions:
+      contents: write  # upload assets to the release
     uses: esphome/workflows/.github/workflows/upload-to-gh-release.yml@9f6577fd37b5cf773ab1b9be929714a0dcd15661  # 2026.7.0
     needs:
       - build-firmware
