@@ -16,10 +16,10 @@ jobs:
       contents: write  # push the template cleanup commit
     steps:
       - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        uses: actions/checkout@v7.0.1
 
       - name: Create issue from setup checklist template
-        uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710  # v6.0.0
+        uses: peter-evans/create-issue-from-file@v6.0.0
         with:
           title: Setup Checklist
           content-filepath: _template/setup-checklist.md
